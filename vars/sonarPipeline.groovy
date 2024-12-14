@@ -2,11 +2,15 @@ def call(Map config = [:]) {
     pipeline {
         agent any
 
-        environment {
-            SONARQUBE_ENV = config.sonarEnv ?: 'SonarQube'
-        }
-
         stages {
+            stage('Setup Environment') {
+                steps {
+                    script {
+                        env.SONARQUBE_ENV = config.sonarEnv ?: 'SonarQube'
+                    }
+                }
+            }
+
             stage('Clone Repository') {
                 steps {
                     script {
@@ -19,7 +23,7 @@ def call(Map config = [:]) {
                 steps {
                     script {
                         def scannerHome = tool(name: 'sonar', type: 'hudson.plugins.sonar.SonarRunnerInstallation')
-                        withSonarQubeEnv(SONARQUBE_ENV) {
+                        withSonarQubeEnv(env.SONARQUBE_ENV) {
                             sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${config.projectKey} \
